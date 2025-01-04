@@ -3,12 +3,34 @@ import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   return (
-    <nav>
-      <ul style={{ display: 'flex', listStyle: 'none', justifyContent: 'space-around' }}>
-        <li><Link to="/">Home</Link></li>
-        <li><Link to="/meal-planner">Meal Planner</Link></li>
-        <li><Link to="/recipe-library">Recipe Library</Link></li>
-      </ul>
+    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+      <div className="container-fluid">
+        <Link className="navbar-brand" to="/">MealPrep Master</Link>
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse" id="navbarNav">
+          <ul className="navbar-nav">
+            <li className="nav-item">
+              <Link className="nav-link" to="/">Home</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/meal-planner">Meal Planner</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/recipe-library">Recipe Library</Link>
+            </li>
+          </ul>
+        </div>
+      </div>
     </nav>
   );
 };

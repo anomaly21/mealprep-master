@@ -14,3 +14,16 @@ const db = new Pool({
 db.connect()
     .then(() => console.log('Connected to PostgreSQL'))
     .catch(err => console.error('Connection error', err.stack));
+
+app.get('/api/test', (req, res) => {
+        res.json({ message: 'Welcome to MealPrep Master!' });
+      });
+app.get('/api/users', async (req, res) => {
+  try {
+    const result = await db.query('SELECT * FROM users');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
