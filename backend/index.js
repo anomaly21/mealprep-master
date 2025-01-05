@@ -5,6 +5,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const path = require('path');
 
 dotenv.config();
 const app = express();
@@ -68,6 +69,33 @@ app.post('/api/hash-password', async (req, res) => {
   }
 });
 
+// Register endpoint
+app.post('/api/register', async (req, res) => {
+  const { username, email, password } = req.body;
+
+  try {
+    const userExists = await db.query('SELECT * FROM users WHERE username = $1 OR email = $2', [
+      username,
+      email,
+    ]);
+    if (userExists.rows.length > 0) {
+      return res.status(400).json({ message: 'User with this username or email already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.query('INSERT INTO users (username, email, password) VALUES ($1, $2, $3)', [
+      username,
+      email,
+      hashedPassword,
+    ]);
+
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (err) {
+    console.error('Error during registration:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 // Login endpoint
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
@@ -88,6 +116,16 @@ app.post('/api/login', async (req, res) => {
   } catch (err) {
     console.error('Error during login:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// Serve React frontend for all non-API routes
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+app.get('*', (req, res) => {
+  if (!req.url.startsWith('/api')) { // Avoid intercepting API routes
+    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+  } else {
+    res.status(404).json({ message: 'API route not found' });
   }
 });
 
