@@ -7,10 +7,10 @@ const MealPlanner = () => {
     <div className="container mt-5">
       <h1 className="text-center mb-4">Weekly Meal Planner</h1>
       <div className="row">
-        {days.map(day => (
+        {days.map((day) => (
           <div className="col-12 col-md-6 col-lg-4 mb-4" key={day}>
             <div className="card shadow-sm">
-              <div className="card-header text-center bg-primary text-white">
+              <div className="card-header bg-primary text-white text-center">
                 <h5>{day}</h5>
               </div>
               <div className="card-body">
