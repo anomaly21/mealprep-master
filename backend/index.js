@@ -29,24 +29,6 @@ db.connect()
 app.use(cors());
 app.use(bodyParser.json());
 
-// Endpoint to hash and store a password
-app.post('/api/hash-password', async (req, res) => {
-  const { username, password } = req.body;
-  console.log('Password hashing request received:', { username });
-
-  try {
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    console.log('Generated hashed password:', hashedPassword);
-
-    await db.query('INSERT INTO users (username, password) VALUES ($1, $2)', [username, hashedPassword]);
-    res.status(201).json({ message: 'User created successfully' });
-  } catch (err) {
-    console.error('Error hashing password:', err.message);
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-});
-
 // Test API endpoint
 app.get('/api/test', async (req, res) => {
   try {
@@ -58,31 +40,50 @@ app.get('/api/test', async (req, res) => {
   }
 });
 
+// Get all users
+app.get('/api/users', async (req, res) => {
+  try {
+    const result = await db.query('SELECT id, username AS name, email FROM users');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// Hash and store a password
+app.post('/api/hash-password', async (req, res) => {
+  const { username, email, password } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.query('INSERT INTO users (username, email, password) VALUES ($1, $2, $3)', [
+      username,
+      email,
+      hashedPassword,
+    ]);
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (err) {
+    console.error('Error hashing password:', err.message);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
 // Login endpoint
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-  console.log('Login request received:', { username });
-
   try {
     const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
-    console.log('Database query result:', result.rows);
-
     if (result.rows.length === 0) {
-      console.log('User not found');
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     const user = result.rows[0];
     const isValidPassword = await bcrypt.compare(password, user.password);
-    console.log('Password validation result:', isValidPassword);
-
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
-    console.log('Token generated:', token);
-
     res.json({ token });
   } catch (err) {
     console.error('Error during login:', err);
