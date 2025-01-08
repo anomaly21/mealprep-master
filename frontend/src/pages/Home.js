@@ -3,19 +3,44 @@ import React, { useEffect, useState } from 'react';
 const Home = () => {
   const [message, setMessage] = useState('');
   const [users, setUsers] = useState([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Fetch server message
-    fetch('http://localhost:5000/api/test')
-      .then((response) => response.json())
+    // Fetch server message for the authenticated user
+    fetch('http://localhost:5000/api/test', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch message');
+        }
+        return response.json();
+      })
       .then((data) => setMessage(data.message))
-      .catch((err) => console.error('Error fetching message:', err));
+      .catch((err) => {
+        console.error('Error fetching message:', err);
+        setError('Failed to load the welcome message.');
+      });
 
-    // Fetch users from database
-    fetch('http://localhost:5000/api/users')
-      .then((response) => response.json())
+    // Fetch all registered users (for admin or demo purposes)
+    fetch('http://localhost:5000/api/users', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+        return response.json();
+      })
       .then((data) => setUsers(data))
-      .catch((err) => console.error('Error fetching users:', err));
+      .catch((err) => {
+        console.error('Error fetching users:', err);
+        setError('Failed to load the user list.');
+      });
   }, []);
 
   return (
@@ -28,6 +53,11 @@ const Home = () => {
         <div className="alert alert-primary mt-4" role="alert">
           {message || 'Fetching message from server...'}
         </div>
+        {error && (
+          <div className="alert alert-danger mt-4" role="alert">
+            {error}
+          </div>
+        )}
       </div>
 
       <div className="mt-5">
