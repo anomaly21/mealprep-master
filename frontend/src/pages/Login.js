@@ -1,33 +1,28 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Local state for redirect
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError(''); // Clear any previous errors
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        navigate('/');
-      } else {
-        setError(data.message || 'Something went wrong');
-      }
+      await onLogin(username, password); // Call the login function passed as a prop
+      setIsLoggedIn(true); // Update state to trigger redirect
     } catch (err) {
-      console.error(err);
-      setError('Something went wrong');
+      setError('Invalid username or password. Please try again.'); // Display login error
     }
   };
+
+  // Redirect to "/home" if logged in
+  if (isLoggedIn) {
+    return <Navigate to="/home" replace />;
+  }
 
   return (
     <div className="container mt-5">
@@ -58,6 +53,18 @@ const Login = () => {
           Login
         </button>
       </form>
+      <div className="text-center mt-3">
+        <p>
+          Not a user?{' '}
+          <button
+            type="button"
+            className="btn btn-link"
+            onClick={() => navigate('/register')}
+          >
+            Register here
+          </button>
+        </p>
+      </div>
     </div>
   );
 };

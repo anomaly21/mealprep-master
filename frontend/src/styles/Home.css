@@ -1,0 +1,15 @@
+.home .hero {
+    background: url('../images/hero-section-image-mealprep.webp') no-repeat center center;
+    background-size: cover;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  }
+  
+  .features .col-md-4 i {
+    font-size: 3rem;
+  }
+  
+  .call-to-action {
+    background: #f8f9fa;
+  }
+  
